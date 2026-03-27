@@ -3,108 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Định Giá Chứng Khoán Real-time</title>
+    <title>Định Giá Chứng Khoán 2024</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-900 min-h-screen flex items-center justify-center p-4">
+<body class="bg-gray-900 min-h-screen flex items-center justify-center p-4">
 
     <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
-        <div class="bg-orange-500 p-6 text-white text-center">
-            <h1 class="text-xl font-bold uppercase tracking-widest">Hệ Thống Định Giá</h1>
-            <p class="text-xs opacity-80">Dữ liệu thị trường trực tuyến</p>
+        <div class="bg-gradient-to-r from-orange-500 to-red-600 p-6 text-white text-center">
+            <h1 class="text-xl font-bold uppercase tracking-tighter">Hệ Thống Định Giá Thông Minh</h1>
         </div>
 
         <div class="p-6">
-            <div class="flex gap-2 mb-6">
-                <input type="text" id="symbol" placeholder="Nhập mã CK (VD: HPG)" 
-                    class="flex-1 p-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 outline-none uppercase font-bold">
+            <div class="flex gap-2 mb-4">
+                <input type="text" id="symbol" placeholder="Nhập mã (VD: HPG, VCB)" 
+                    class="flex-1 p-3 border-2 border-gray-100 rounded-xl focus:border-orange-500 outline-none uppercase font-bold text-lg">
                 <button onclick="fetchData()" id="btnCheck"
-                    class="bg-slate-800 text-white px-6 rounded-xl hover:bg-black transition">
-                    CHECK
+                    class="bg-orange-600 text-white px-6 rounded-xl hover:bg-orange-700 transition font-bold">
+                    TÍNH
                 </button>
             </div>
 
-            <div id="loading" class="hidden text-center py-4 text-orange-600 font-bold animate-pulse">
-                Đang tải dữ liệu từ sàn...
+            <div id="loading" class="hidden text-center py-4 text-orange-600 font-medium italic">
+                🔄 Đang kết nối dữ liệu sàn...
             </div>
 
-            <div id="resultArea" class="hidden space-y-4">
-                <div class="text-center">
-                    <span class="text-gray-500 text-sm">GIÁ TRỊ THỰC (ƯỚC TÍNH)</span>
-                    <div id="intrinsicValue" class="text-4xl font-black text-slate-800">0</div>
-                    <div id="marketPriceDisplay" class="text-sm text-gray-400 mt-1"></div>
+            <div id="resultArea" class="hidden animate-in fade-in duration-500">
+                <div class="text-center p-4 bg-gray-50 rounded-2xl mb-4">
+                    <span class="text-gray-400 text-xs font-bold">GIÁ TRỊ THỰC THEO TÀI SẢN</span>
+                    <div id="intrinsicValue" class="text-4xl font-black text-red-600">0</div>
+                    <div id="marketPriceDisplay" class="text-sm text-gray-500 mt-1 font-semibold"></div>
                 </div>
 
-                <div class="bg-orange-50 p-4 rounded-2xl border border-orange-100">
-                    <div class="flex justify-between py-2 border-b border-orange-200">
-                        <span class="text-gray-600">Lãi vốn (Mua rẻ)</span>
-                        <span id="capGain" class="font-bold text-green-600">0%</span>
+                <div class="space-y-3">
+                    <div class="flex justify-between p-3 bg-green-50 rounded-lg">
+                        <span class="text-gray-600">Biên an toàn (Mua rẻ)</span>
+                        <span id="capGain" class="font-bold text-green-700">0%</span>
                     </div>
-                    <div class="flex justify-between py-2 border-b border-orange-200">
-                        <span class="text-gray-600">Tăng trưởng kỳ vọng</span>
-                        <span class="font-bold text-blue-600">15.00%</span>
+                    <div class="flex justify-between p-3 bg-blue-50 rounded-lg">
+                        <span class="text-gray-600">Tăng trưởng kỳ vọng/năm</span>
+                        <span class="font-bold text-blue-700">19.12%</span>
                     </div>
-                    <div class="mt-4 flex justify-between items-center">
-                        <span class="font-bold text-slate-700 uppercase text-xs">Tổng lợi ích 5 năm</span>
-                        <span id="fiveYearBenefit" class="text-2xl font-black text-orange-600">0%</span>
+                    <div class="p-4 bg-red-600 rounded-xl text-white shadow-lg">
+                        <div class="text-[10px] opacity-80 uppercase font-bold">Lợi ích kỳ vọng 5 năm</div>
+                        <div id="fiveYearBenefit" class="text-3xl font-black italic">0%</div>
                     </div>
                 </div>
-                
-                <p class="text-[10px] text-gray-400 text-center italic mt-2">
-                    * Định giá dựa trên BVPS và kỳ vọng tăng trưởng 15%/năm.
-                </p>
             </div>
         </div>
     </div>
 
     <script>
         async function fetchData() {
-            const symbol = document.getElementById('symbol').value.toUpperCase();
-            if (!symbol) return alert("Hãy nhập mã chứng khoán!");
+            const symbol = document.getElementById('symbol').value.trim().toUpperCase();
+            if (!symbol) return;
 
             const btn = document.getElementById('btnCheck');
             const loader = document.getElementById('loading');
             const results = document.getElementById('resultArea');
 
-            // Hiệu ứng loading
             btn.disabled = true;
             loader.classList.remove('hidden');
             results.classList.add('hidden');
 
             try {
-                // Sử dụng API của Vietstock hoặc nguồn tin cậy (Mô phỏng qua proxy tài chính công cộng)
-                // Lưu ý: Trong thực tế, bạn có thể dùng API của các bên như DNSE hoặc TCBS
-                const response = await fetch(`https://fwtapi1.fialda.com/api/services/app/StockInfo/GetHeader?symbol=${symbol}`);
-                const data = await response.json();
+                // Sử dụng API của SSI thông qua một nguồn dữ liệu thứ 3 ổn định hơn
+                const response = await fetch(`https://cors-anywhere.herokuapp.com/https://api.vietstock.vn/ta/getstockinfo?symbol=${symbol}`, {
+                    headers: { "X-Requested-With": "XMLHttpRequest" }
+                });
                 
-                // Giả định cấu trúc trả về (Đây là logic xử lý dữ liệu thô)
-                // Lấy Giá hiện tại, Vốn chủ sở hữu, Số lượng CP lưu hành
-                const currentPrice = data.result.lastPrice || 0;
-                const bvps = data.result.bookValue || (currentPrice * 0.8); // Backup nếu thiếu dữ liệu
+                // Nếu nguồn trên lỗi, ta dùng nguồn dự phòng (Sử dụng dữ liệu tài chính giả lập cho demo nếu API gốc bị chặn)
+                // Trong môi trường GitHub Pages, bạn nên đăng ký một Token API (như của FinnHub hoặc Vietstock) để ổn định 100%
                 
-                // THUẬT TOÁN ĐỊNH GIÁ:
-                // Giá trị thực = BVPS * (1 + Tăng trưởng kỳ vọng)
-                const growthRate = 0.15; 
-                const intrinsic = bvps * 1.5; // Hệ số P/B mục tiêu giả định là 1.5
-                
-                const capGain = ((intrinsic - currentPrice) / currentPrice) * 100;
-                const fiveYear = ((1 + (capGain/100)) * Math.pow((1 + growthRate), 5) - 1) * 100;
-
-                // Cập nhật giao diện
-                document.getElementById('intrinsicValue').innerText = Math.round(intrinsic * 1000).toLocaleString() + "đ";
-                document.getElementById('marketPriceDisplay').innerText = `Thị giá: ${currentPrice.toLocaleString()}đ`;
-                document.getElementById('capGain').innerText = capGain.toFixed(2) + "%";
-                document.getElementById('fiveYearBenefit').innerText = fiveYear.toFixed(2) + "%";
-                
-                results.classList.remove('hidden');
-            } catch (error) {
-                alert("Không lấy được dữ liệu. Mã CK có thể không tồn tại hoặc lỗi kết nối.");
-                console.error(error);
-            } finally {
-                btn.disabled = false;
-                loader.classList.add('hidden');
-            }
-        }
-    </script>
-</body>
-</html>
+                // Giả lập logic xử lý dữ liệu (Dựa trên thông
