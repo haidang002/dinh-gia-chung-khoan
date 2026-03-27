@@ -3,112 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Định Giá Chứng Khoán</title>
+    <title>Chuyên Gia Định Giá Chứng Khoán</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;700;900&display=swap');
-        body { font-family: 'Lexend', sans-serif; background-color: #f0f2f5; }
-        .btn-gradient { background: linear-gradient(135deg, #e67e22, #d35400); transition: 0.3s; }
-        .btn-gradient:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(211, 84, 0, 0.3); }
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap');
+        body { font-family: 'Montserrat', sans-serif; background: #f3f4f6; }
+        .input-group { border-bottom: 1px solid #eee; padding: 10px 0; }
+        .label-custom { font-size: 11px; color: #999; font-weight: bold; text-transform: uppercase; }
+        .value-input { width: 100%; border: none; outline: none; font-weight: bold; color: #333; font-size: 16px; background: transparent; }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
 
-    <div class="bg-white w-full max-w-md rounded-[2.5rem] shadow-[0_20px_60px_rgba(0,0,0,0.1)] overflow-hidden">
-        <div class="p-8 pb-0 text-center">
-            <div class="inline-block px-4 py-1 bg-orange-100 text-orange-600 rounded-full text-[10px] font-bold uppercase tracking-widest mb-2">
-                Công cụ phân tích 2026
+    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
+        <div class="p-6 space-y-2">
+            <div class="input-group">
+                <p class="label-custom">Vốn chủ sở hữu hiện tại (Tỷ đồng)</p>
+                <input type="number" id="equity" value="67995.71" class="value-input">
             </div>
-            <h1 class="text-3xl font-black text-slate-800 tracking-tighter">ĐỊNH GIÁ <span class="text-orange-600 italic">PRO</span></h1>
+            <div class="input-group">
+                <p class="label-custom">Thị giá cổ phiếu (Đồng/CP)</p>
+                <input type="number" id="price" value="14750" class="value-input">
+            </div>
+            <div class="input-group">
+                <p class="label-custom">Tổng số lượng cổ phiếu (Triệu CP)</p>
+                <input type="number" id="shares" value="4594.2" class="value-input">
+            </div>
+            <div class="input-group">
+                <p class="label-custom">Tăng giá trị hàng năm (%)</p>
+                <input type="number" id="growth" value="19.12" class="value-input text-blue-600">
+            </div>
+
+            <button onclick="calculate()" class="w-full bg-[#b8860b] hover:bg-[#a0760a] text-white font-black py-4 rounded-xl mt-4 uppercase tracking-widest transition-all">
+                ĐỊNH GIÁ
+            </button>
         </div>
 
-        <div class="p-8">
-            <div class="space-y-4 mb-6">
-                <input type="text" id="symbol" placeholder="NHẬP MÃ (HPG, VCB, FPT...)" 
-                    class="w-full p-5 bg-gray-50 border-2 border-gray-100 rounded-2xl outline-none focus:border-orange-500 font-bold text-xl uppercase text-center transition-all">
-                
-                <button onclick="runAnalysis()" id="btnAction"
-                    class="w-full btn-gradient text-white font-black py-5 rounded-2xl text-lg shadow-lg uppercase">
-                    PHÂN TÍCH DỮ LIỆU
-                </button>
-            </div>
-
-            <div id="resultArea" class="hidden space-y-5 animate-in fade-in zoom-in duration-300">
-                <hr class="border-gray-100">
-                
-                <div class="text-center py-4">
-                    <p class="text-gray-400 text-xs font-bold uppercase tracking-widest">Giá Trị Thực Ước Tính</p>
-                    <p id="intrinsicValue" class="text-5xl font-black text-slate-900 my-2">0</p>
-                    <p id="marketDisplay" class="text-sm font-bold text-orange-500"></p>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                        <p class="text-[10px] text-gray-400 font-bold uppercase">Lãi vốn</p>
-                        <p id="capGain" class="text-lg font-black text-green-600">+0%</p>
-                    </div>
-                    <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                        <p class="text-[10px] text-gray-400 font-bold uppercase">Kỳ vọng năm</p>
-                        <p class="text-lg font-black text-blue-600">19.12%</p>
-                    </div>
-                </div>
-
-                <div class="bg-slate-900 p-6 rounded-[2rem] text-white shadow-xl relative overflow-hidden">
-                    <div class="relative z-10">
-                        <p class="text-[10px] font-bold uppercase opacity-60">Tổng lợi ích 5 năm</p>
-                        <p id="fiveYearBenefit" class="text-4xl font-black italic mt-1 text-orange-400">+0%</p>
-                    </div>
-                    <div class="absolute right-[-10%] bottom-[-20%] w-32 h-32 bg-orange-500/20 rounded-full blur-2xl"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        function runAnalysis() {
-            const symbol = document.getElementById('symbol').value.trim().toUpperCase();
-            if (!symbol) { alert("Vui lòng nhập mã!"); return; }
-
-            const btn = document.getElementById('btnAction');
-            const results = document.getElementById('resultArea');
-            
-            btn.innerHTML = "ĐANG TÍNH TOÁN...";
-            btn.disabled = true;
-
-            // Bộ dữ liệu thực tế nội bộ (Cập nhật 2026)
-            const stockData = {
-                "HPG": 32500,
-                "VCB": 95000,
-                "FPT": 145000,
-                "VIC": 48000,
-                "VNM": 72000,
-                "TCB": 52000,
-                "SSI": 38000,
-                "DEFAULT": Math.floor(Math.random() * 20000) + 20000
-            };
-
-            const price = stockData[symbol] || stockData["DEFAULT"];
-            
-            // Logic định giá giống ảnh mẫu của bạn
-            setTimeout(() => {
-                const growthRate = 0.1912; 
-                const premium = 1.3744; // Hệ số mua rẻ tài sản
-                
-                const intrinsic = price * premium;
-                const capGain = ((intrinsic - price) / price) * 100;
-                const fiveYear = ((1 + (capGain/100)) * Math.pow((1 + growthRate), 5) - 1) * 100;
-
-                // Hiển thị kết quả
-                document.getElementById('intrinsicValue').innerText = Math.round(intrinsic).toLocaleString();
-                document.getElementById('marketDisplay').innerText = `Thị giá: ${price.toLocaleString()} đ/CP`;
-                document.getElementById('capGain').innerText = "+" + capGain.toFixed(2) + "%";
-                document.getElementById('fiveYearBenefit').innerText = "+" + fiveYear.toFixed(2) + "%";
-
-                results.classList.remove('hidden');
-                btn.innerHTML = "PHÂN TÍCH DỮ LIỆU";
-                btn.disabled = false;
-            }, 600);
-        }
-    </script>
-</body>
-</html>
+        <div id="result" class="bg-[#fffafa] p-8 border-t border-gray-100">
+            <div class="text-center mb-6">
+                <p class="text-[#999] text-[10px] font-black uppercase tracking-widest">GIÁ TRỊ THỰC</p>
